@@ -129,7 +129,7 @@ namespace NerdStore.Vendas.Domain.Tests
         }
 
         [Fact(DisplayName = "Atualizar Item Pedido Validar Total")]
-        [Trait("Categoria", "Vendas - Pedido ")]
+        [Trait("Categoria", "Vendas - Pedido")]
         public void AtualizarItemPedido_PedidoComProdutosDiferentes_DeveAtualizarValortotal()
         {
             // Arrange
@@ -159,7 +159,7 @@ namespace NerdStore.Vendas.Domain.Tests
         }
 
         [Fact(DisplayName = "Atualizar Item Pedido Quantidade Acima do Permitido")]
-        [Trait("Categoria", "Vendas - Pedido ")]
+        [Trait("Categoria", "Vendas - Pedido")]
         public void AtualizarItemPedido_ItemUnidadeAcimadoPedido_DeveRetornarExcpetion()
         {
             // Arrange
@@ -180,6 +180,61 @@ namespace NerdStore.Vendas.Domain.Tests
             Assert.Throws<DomainException>(() => pedido.AtualizarItem(pedidoItemAtualizado));
 
         }
+
+
+        //3 - Remoção de Item
+        //3.1 - O item precisa estar na lista para ser removido
+        //3.2 - Ao remover um item é necessário calcular o valor total do pedido
+
+
+        [Fact(DisplayName = "Remover Item Pedido Inexistente")]
+        [Trait("Categoria", "Vendas - Pedido")]
+        public void RemoverItemPeido_ItemNaoExisteNaLista_DeveRetornarException()
+        {
+            // Arrange
+            // Configurações iniciais acima do pedido
+
+            var pedido = Pedido.PedidoFactory.NovoPedidoRascunho(Guid.NewGuid());
+            var productId = Guid.NewGuid();
+            var pedidoItem1 = new PedidoItem(productId, "Produto Teste 1", 3, 15);
+
+            //pedido.AdicionarItem(pedidoItem1);
+
+
+            // Act
+
+            // Assert
+            // Validação do resultado
+            Assert.Throws<DomainException>(() => pedido.RemoverItem(pedidoItem1));
+        }
+
+        [Fact(DisplayName = "Remover Item Pedido Inexistente")]
+        [Trait("Categoria", "Vendas - Pedido")]
+        public void RemoverItemPeido_ItemNaoExisteNaLista_DeveRemoverPedido()
+        {
+            // Arrange
+            // Configurações iniciais acima do pedido
+
+            var pedido = Pedido.PedidoFactory.NovoPedidoRascunho(Guid.NewGuid());
+            var productId = Guid.NewGuid();
+            var productId2 = Guid.NewGuid();
+            var pedidoItem1 = new PedidoItem(productId, "Produto Teste 1", 3, 15);
+            var pedidoItem2 = new PedidoItem(productId2, "Produto Teste 2", 6, 1500);
+
+            pedido.AdicionarItem(pedidoItem1);
+            pedido.AdicionarItem(pedidoItem2);
+
+            pedido.RemoverItem(pedidoItem2);
+
+            var newList = pedido.PedidoItems.FirstOrDefault(p => p.ProductId == pedidoItem2.ProductId);
+
+            // Act
+
+            // Assert
+            // Validação do resultado
+            Assert.Null(newList);
+        }
+
 
     }
 }
