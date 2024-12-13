@@ -192,6 +192,7 @@ namespace NerdStore.Vendas.Domain.Tests
         public void RemoverItemPeido_ItemNaoExisteNaLista_DeveRetornarException()
         {
             // Arrange
+
             // Configurações iniciais acima do pedido
 
             var pedido = Pedido.PedidoFactory.NovoPedidoRascunho(Guid.NewGuid());
@@ -200,10 +201,10 @@ namespace NerdStore.Vendas.Domain.Tests
 
             //pedido.AdicionarItem(pedidoItem1);
 
-
             // Act
 
             // Assert
+
             // Validação do resultado
             Assert.Throws<DomainException>(() => pedido.RemoverItem(pedidoItem1));
         }
@@ -213,15 +214,20 @@ namespace NerdStore.Vendas.Domain.Tests
         public void RemoverItemPeido_ItemNaoExisteNaLista_DeveRemoverPedido()
         {
             // Arrange
+
             // Configurações iniciais acima do pedido
 
             var pedido = Pedido.PedidoFactory.NovoPedidoRascunho(Guid.NewGuid());
+            
             var productId = Guid.NewGuid();
+            
             var productId2 = Guid.NewGuid();
+            
             var pedidoItem1 = new PedidoItem(productId, "Produto Teste 1", 3, 15);
             var pedidoItem2 = new PedidoItem(productId2, "Produto Teste 2", 6, 1500);
 
             pedido.AdicionarItem(pedidoItem1);
+
             pedido.AdicionarItem(pedidoItem2);
 
             pedido.RemoverItem(pedidoItem2);
@@ -231,10 +237,11 @@ namespace NerdStore.Vendas.Domain.Tests
             // Act
 
             // Assert
+
             // Validação do resultado
+
             Assert.Null(newList);
         }
-
 
     }
 }
