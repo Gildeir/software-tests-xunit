@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit.Sdk;
 
 namespace NerdStore.Vendas.Domain.Tests
 {
@@ -29,17 +30,12 @@ namespace NerdStore.Vendas.Domain.Tests
         public void Voucher_ValidarVoucherValor_DeveEstarValido()
         {
             // Arrange
+            var voucher = new Voucher("PROMO-15-REAIS", null, 15, TipoDescontoVoucher.Valor, 1,
+                DateTime.Now.AddDays(15),
+                true,
+                false
 
-            var voucher = new Voucher
-            {
-                Codigo = "PROMO-15-REAIS",
-                ValorDesconto = 15,
-                PercentualDesconto = null,
-                Quantidade = 1,
-                DataValidade = DateTime.Now,
-                Ativo = true,
-                Utilizado = false
-            };
+            );
 
 
             // Act
@@ -47,26 +43,55 @@ namespace NerdStore.Vendas.Domain.Tests
             var result = voucher.ValidarSeAplicavel();
 
             //Assert
-            Assert.True(result);
+            Assert.True(result.IsValid);
         }
 
-        [Fact(DisplayName = "Aplicar Voucher de Desconto")]
+        [Fact(DisplayName = "Validar Voucher Tipo Valor Invalido")]
+        [Trait("Categoria", "Vendas - Voucher")]
+        public void Voucher_ValidarVoucherValor_DeveEstarInvalido()
+        {
+            // Arrange
+            var voucher = new Voucher("", null, null, TipoDescontoVoucher.Valor, 0,
+                DateTime.Now.AddDays(-1), false,true
+
+            );
+
+            // Act
+
+            var result = voucher.ValidarSeAplicavel();
+
+             //Assert
+            Assert.False(result.IsValid);
+
+            Assert.Equal(6, result.Errors.Count);
+
+            Assert.Contains(VoucherAplicavelValidation.AtivoErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+            Assert.Contains(VoucherAplicavelValidation.CodigoErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+            Assert.Contains(VoucherAplicavelValidation.DataValidadeErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+            Assert.Contains(VoucherAplicavelValidation.QuantidadeErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+            Assert.Contains(VoucherAplicavelValidation.UtilizadoErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+            Assert.Contains(VoucherAplicavelValidation.ValorDescontoErroMsg, result.Errors.Select(c => c.ErrorMessage));
+
+        }
+
+        [Fact(DisplayName = "Aplicar Voucher Porcentagem Válido")]
         [Trait("Categoria", "Voucher - Pedido")]
         public void AplicarVoucherPedido_AplicarVoucher_DeveAplicarVoucherEmPorcentagem()
         {
             // Arrange
 
 
-            var voucherArrange = new Voucher
-            {
-                Codigo = "PROMO-15-REAIS",
-                ValorDesconto = 0,
-                PercentualDesconto = 8,
-                Quantidade = 1,
-                DataValidade = new DateTime(),
-                Ativo = true,
-                Utilizado = false
-            };
+            var voucher = new Voucher("PROMO-15-REAIS", null,15, TipoDescontoVoucher.Valor,1,
+              DateTime.Now.AddDays(15),
+              true,
+              false
+              
+              );
 
             // Configurações iniciais acima do pedido
 
@@ -81,7 +106,7 @@ namespace NerdStore.Vendas.Domain.Tests
             
             pedido.AdicionarItem(pedidoItem1);
 
-            pedido.AplicarVoucher(voucherArrange, pedido);
+            pedido.AplicarVoucher(voucher, pedido);
 
 
             // Act
@@ -97,16 +122,12 @@ namespace NerdStore.Vendas.Domain.Tests
         {
             // Arrange
 
-            var voucherArrange = new Voucher
-            {
-                Codigo = "´PROMO-15-REAIS",
-                ValorDesconto = 10,
-                PercentualDesconto = null,
-                Quantidade = 1,
-                DataValidade = new DateTime(),
-                Ativo = true,
-                Utilizado = false
-            };
+            var voucher = new Voucher("PROMO-15-REAIS", null, 15, TipoDescontoVoucher.Valor, 1,
+                DateTime.Now.AddDays(15),
+                true,
+                false
+
+            );
 
             // Configurações iniciais acima do pedido
 
@@ -120,7 +141,7 @@ namespace NerdStore.Vendas.Domain.Tests
 
             pedido.AdicionarItem(pedidoItem1);
 
-            pedido.AplicarVoucher(voucherArrange, pedido);
+            pedido.AplicarVoucher(voucher, pedido);
 
             // Act
 
