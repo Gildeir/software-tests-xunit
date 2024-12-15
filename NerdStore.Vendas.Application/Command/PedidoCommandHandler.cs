@@ -8,6 +8,7 @@ namespace NerdStore.Vendas.Application.Command
     public class PedidoCommandHandler: IRequestHandler<AdicionarItemPedidoCommand, bool>
     {
         private readonly IPedidoRepository _pedidoRepository;
+
         private readonly IMediator _mediator;
 
         public PedidoCommandHandler(IPedidoRepository pedidoRepository, IMediator mediator)
@@ -15,7 +16,6 @@ namespace NerdStore.Vendas.Application.Command
             _pedidoRepository = pedidoRepository;
             _mediator = mediator;
         }
-
 
         public async Task<bool> Handle(AdicionarItemPedidoCommand message, CancellationToken cancellationToken)
         {
@@ -27,10 +27,10 @@ namespace NerdStore.Vendas.Application.Command
 
             _pedidoRepository.Adicionar(pedido);
 
-            await _mediator.Publish(new PedidoItemAdicionadoEvent(pedido.ClientId, pedido.Id,
-                message.ProdutoId, message.Nome, message.ValorUnitario, message.Quantidade), cancellationToken);
+           pedido.AdicionarEvento(new PedidoItemAdicionadoEvent(pedido.ClientId, pedido.Id,
+                message.ProdutoId, message.Nome, message.ValorUnitario, message.Quantidade));
 
-            return true;
+            return await _pedidoRepository.UnitOfWork.Commit();
         }
     }
 }
