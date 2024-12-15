@@ -82,7 +82,7 @@ namespace NerdStore.Vendas.Application.Teste.Pedidos
             var produtoId = Guid.NewGuid();
 
             var pedido = Pedido.PedidoFactory.NovoPedidoRascunho(clientId);
-            var pedidoItemExistente = new PedidoItem(Guid.NewGuid(), "Produto xpto", 2, 100);
+            var pedidoItemExistente = new PedidoItem(produtoId, "Produto xpto", 2, 100);
             pedido.AdicionarItem(pedidoItemExistente);
 
             var pedidoCommand = new AdicionarItemPedidoCommand(clientId, produtoId,
@@ -110,6 +110,29 @@ namespace NerdStore.Vendas.Application.Teste.Pedidos
             mocker.GetMock<IPedidoRepository>().Verify(r => r.UnitOfWork.Commit(), Times.Once);
 
 
+        }
+        
+        [Fact(DisplayName = "Adicionar Item Existente ao Pedido Rascunho com Sucesso")]
+        [Trait("Categoria", "Vendas - Pedido Command Handler")]
+        public async Task AdicionarItem_CommandInvalido_DeveRetornarFalsoElancarEventosDeNotificacao()
+        {
+            var pedidoCommand = new AdicionarItemPedidoCommand(Guid.Empty, Guid.Empty, 
+                "", 0, -10);
+
+            var mocker = new AutoMocker();
+            var pedidoHandler = mocker.CreateInstance<PedidoCommandHandler>();
+
+
+            //Act
+
+            var result = await pedidoHandler.Handle(pedidoCommand, CancellationToken.None);
+
+            //Assert
+
+            Assert.False(result);
+
+            mocker.GetMock<IMediator>().Verify(r => r.Publish(It.IsAny<INotification>(), CancellationToken.None), Times.Exactly(5));
+            
         }
     }
 }
